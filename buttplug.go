@@ -12,7 +12,7 @@ import (
 
 type Buttplug interface {
 	Send(messages ...Message) error
-	Recieve() <-chan interface{}
+	Recieve() <-chan Message
 	Error() <-chan error
 	Close(timeout time.Duration) error
 }
@@ -20,7 +20,7 @@ type Buttplug interface {
 type buttplug struct {
 	conn *websocket.Conn
 	done chan interface{}
-	msg  chan interface{}
+	msg  chan Message
 	err  chan error
 }
 
@@ -33,7 +33,7 @@ func Dial(url string) (Buttplug, error) {
 	buttplug := &buttplug{
 		conn: conn,
 		done: make(chan interface{}, 0),
-		msg:  make(chan interface{}, 0),
+		msg:  make(chan Message, 0),
 		err:  make(chan error, 0),
 	}
 
@@ -91,7 +91,7 @@ func (buttplug *buttplug) processJSON(message []byte) {
 			continue
 		}
 
-		buttplug.msg <- msg
+		buttplug.msg <- msg.(Message)
 	}
 }
 
@@ -110,7 +110,7 @@ func (buttplug *buttplug) Send(messages ...Message) error {
 	return buttplug.conn.WriteMessage(websocket.TextMessage, json)
 }
 
-func (buttplug *buttplug) Recieve() <-chan interface{} {
+func (buttplug *buttplug) Recieve() <-chan Message {
 	return buttplug.msg
 }
 

@@ -1,8 +1,10 @@
 package statusmsg
 
+import "github.com/pidurentry/buttplug-go"
+
 //go:generate go run ../message/generator.go -- $GOFILE
 
 type RequestLog struct {
-	ID       int      `json:"Id"`
-	LogLevel LogLevel `json:"LogLevel"`
+	ID       buttplug.MessageId `json:"Id"`
+	LogLevel LogLevel           `json:"LogLevel"`
 }

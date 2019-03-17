@@ -2,7 +2,10 @@ package buttplug
 
 import "errors"
 
+type MessageId int
+
 type Message interface {
+	Id() MessageId
 	Serilize() interface{}
 }
 

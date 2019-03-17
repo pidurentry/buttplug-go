@@ -7,6 +7,10 @@ func init() {
     buttplug.MessageRepository["Ping"] = func() interface{} { return &Ping{} }
 }
 
+func (msg *Ping) Id() buttplug.MessageId {
+    return msg.ID
+}
+
 func (msg *Ping) Serilize() interface{} {
     return map[string]*Ping{
         "Ping": msg,

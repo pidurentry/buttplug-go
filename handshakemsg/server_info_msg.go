@@ -7,6 +7,10 @@ func init() {
     buttplug.MessageRepository["ServerInfo"] = func() interface{} { return &ServerInfo{} }
 }
 
+func (msg *ServerInfo) Id() buttplug.MessageId {
+    return msg.ID
+}
+
 func (msg *ServerInfo) Serilize() interface{} {
     return map[string]*ServerInfo{
         "ServerInfo": msg,

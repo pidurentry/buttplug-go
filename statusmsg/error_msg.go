@@ -7,6 +7,10 @@ func init() {
     buttplug.MessageRepository["Error"] = func() interface{} { return &Error{} }
 }
 
+func (msg *Error) Id() buttplug.MessageId {
+    return msg.ID
+}
+
 func (msg *Error) Serilize() interface{} {
     return map[string]*Error{
         "Error": msg,

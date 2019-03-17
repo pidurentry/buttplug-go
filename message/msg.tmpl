@@ -7,6 +7,10 @@ func init() {
 {{range .Msgs}}    buttplug.MessageRepository["{{.}}"] = func() interface{} { return &{{.}}{} }{{end}}
 }
 {{range .Msgs}}
+func (msg *{{.}}) Id() buttplug.MessageId {
+    return msg.ID
+}
+
 func (msg *{{.}}) Serilize() interface{} {
     return map[string]*{{.}}{
         "{{.}}": msg,
