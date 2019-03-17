@@ -1,6 +1,6 @@
 package statusmsg
 
-import "github.com/pidurentry/buttplug-go"
+//go:generate go run ../message/generator.go -- $GOFILE
 
 type LogLevel string
 type LogMessage string
@@ -16,19 +16,7 @@ const (
 )
 
 type Log struct {
-	id         buttplug.MessageId
-	logLevel   LogLevel
-	logMessage LogMessage
-}
-
-func (log *Log) Id() buttplug.MessageId {
-	return log.id
-}
-
-func (log *Log) LogLevel() LogLevel {
-	return log.logLevel
-}
-
-func (log *Log) LogMessage() LogMessage {
-	return log.logMessage
+	ID         int        `json:"Id"`
+	LogLevel   LogLevel   `json:"LogLevel"`
+	LogMessage LogMessage `json:"LogMessage"`
 }

@@ -1,11 +1,7 @@
 package statusmsg
 
-import "github.com/pidurentry/buttplug-go"
+//go:generate go run ../message/generator.go -- $GOFILE
 
 type Ok struct {
-	id buttplug.MessageId
-}
-
-func (ok *Ok) Id() buttplug.MessageId {
-	return ok.id
+	ID int `json:"Id"`
 }

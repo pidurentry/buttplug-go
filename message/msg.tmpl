@@ -1,0 +1,11 @@
+package {{.Package}}
+
+// Auto generated file - do not directly edit!
+{{range .Msgs}}
+func (msg *{{.}}) Serilize() interface{} {
+    return map[string]*{{.}}{
+        "{{.}}": msg,
+    }
+}
+
+{{end}}
