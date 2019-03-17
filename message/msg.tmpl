@@ -1,6 +1,11 @@
 package {{.Package}}
 
 // Auto generated file - do not directly edit!
+import "github.com/pidurentry/buttplug-go"
+
+func init() {
+{{range .Msgs}}    buttplug.MessageRepository["{{.}}"] = func() interface{} { return &{{.}}{} }{{end}}
+}
 {{range .Msgs}}
 func (msg *{{.}}) Serilize() interface{} {
     return map[string]*{{.}}{

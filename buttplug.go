@@ -1,25 +1,27 @@
 package buttplug
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
-
-	"github.com/pidurentry/buttplug-go/handshakemsg"
 
 	"github.com/gorilla/websocket"
 )
 
 type Buttplug interface {
 	Send(messages ...Message) error
-	Wait()
+	Recieve() <-chan interface{}
+	Error() <-chan error
 	Close(timeout time.Duration) error
 }
 
 type buttplug struct {
-	done chan interface{}
 	conn *websocket.Conn
+	done chan interface{}
+	msg  chan interface{}
+	err  chan error
 }
 
 func Dial(url string) (Buttplug, error) {
@@ -29,38 +31,68 @@ func Dial(url string) (Buttplug, error) {
 	}
 
 	buttplug := &buttplug{
-		done: make(chan interface{}, 0),
 		conn: conn,
+		done: make(chan interface{}, 0),
+		msg:  make(chan interface{}, 0),
+		err:  make(chan error, 0),
 	}
 
 	go buttplug.listen()
-
-	if err := buttplug.Send(&handshakemsg.RequestServerInfo{1, "buttplug-go", handshakemsg.MESSAGE_VERSION}); err != nil {
-		return buttplug, err
-	}
-
 	return buttplug, nil
 }
 
 func (buttplug *buttplug) listen() {
 	defer close(buttplug.done)
-
 	for {
 		messageType, message, err := buttplug.conn.ReadMessage()
 		if err != nil {
 			switch err.(type) {
 			case *websocket.CloseError:
+				return
 			default:
-				fmt.Printf("%#v\n", err)
+				buttplug.err <- err
 			}
-			return
 		}
 		go buttplug.processMessage(messageType, message)
 	}
 }
 
 func (buttplug *buttplug) processMessage(messageType int, message []byte) {
-	fmt.Printf("%d: %s\n", messageType, message)
+	switch messageType {
+	case websocket.TextMessage:
+		buttplug.processJSON(message)
+	default:
+		buttplug.err <- errors.New("unexpected websocket message type")
+	}
+}
+
+func (buttplug *buttplug) processJSON(message []byte) {
+	dec := json.NewDecoder(bytes.NewReader(message))
+	for dec.More() {
+		token, err := dec.Token()
+		if err != nil {
+			buttplug.err <- err
+			return
+		}
+
+		msgType, ok := token.(string)
+		if !ok {
+			continue
+		}
+
+		msg, err := NewMessage(msgType)
+		if err != nil {
+			buttplug.err <- err
+			continue
+		}
+
+		if err := dec.Decode(msg); err != nil {
+			buttplug.err <- err
+			continue
+		}
+
+		buttplug.msg <- msg
+	}
 }
 
 func (buttplug *buttplug) Send(messages ...Message) error {
@@ -78,8 +110,12 @@ func (buttplug *buttplug) Send(messages ...Message) error {
 	return buttplug.conn.WriteMessage(websocket.TextMessage, json)
 }
 
-func (buttplug *buttplug) Wait() {
-	<-buttplug.done
+func (buttplug *buttplug) Recieve() <-chan interface{} {
+	return buttplug.msg
+}
+
+func (buttplug *buttplug) Error() <-chan error {
+	return buttplug.err
 }
 
 func (buttplug *buttplug) Close(timeout time.Duration) error {
