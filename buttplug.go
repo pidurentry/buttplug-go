@@ -3,7 +3,6 @@ package buttplug
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -72,7 +71,7 @@ func (buttplug *buttplug) processMessage(messageType int, message []byte) {
 		buttplug.processJSON(message)
 	default:
 		logging.GetLogger().Errorf("Recieved unexpected %s message: %v", buttplug.lookupMessageType(messageType))
-		buttplug.err <- errors.New("unexpected websocket message type")
+		buttplug.err <- &UnexpectedWebsocketMessageType{}
 	}
 }
 
@@ -167,7 +166,7 @@ func (buttplug *buttplug) Close(timeout time.Duration) error {
 	case <-buttplug.done:
 	case <-time.After(timeout):
 		logging.GetLogger().Warning("Connection failed to close")
-		return errors.New("timeout reached")
+		return &Timeout{}
 	}
 
 	return nil

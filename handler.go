@@ -1,7 +1,6 @@
 package buttplug
 
 import (
-	"errors"
 	"sync"
 	"time"
 )
@@ -80,7 +79,7 @@ func (handler *handler) Call(message Message) (Message, error) {
 	select {
 	case msg = <-channel:
 	case <-time.After(500 * time.Millisecond):
-		return nil, errors.New("timeout reached")
+		return nil, &Timeout{}
 	}
 
 	if err, ok := msg.(error); ok {
@@ -95,7 +94,7 @@ func (handler *handler) Register(message Message) (<-chan Message, error) {
 
 	_, ok := handler.channels[message.Id()]
 	if ok {
-		return nil, errors.New("message id already used")
+		return nil, &MessageIdReused{}
 	}
 
 	handler.channels[message.Id()] = make(chan Message, 0)
