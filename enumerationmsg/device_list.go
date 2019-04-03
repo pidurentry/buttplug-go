@@ -1,10 +1,10 @@
 package enumerationmsg
 
-import "github.com/pidurentry/buttplug-go"
+import "github.com/pidurentry/buttplug-go/message"
 
-//go:generate go run ../message/generator.go -- $GOFILE
+//go:generate go run ../tools/message_generator.go -- $GOFILE
 
 type DeviceList struct {
-	ID      buttplug.MessageId `json:"Id"`
-	Devices []*buttplug.Device `json:"Devices"`
+	ID      message.Id `json:"Id"`
+	Devices []*Device  `json:"Devices"`
 }

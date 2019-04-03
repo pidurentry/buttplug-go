@@ -83,5 +83,5 @@ func templates() ([]string, error) {
 	if !ok {
 		return nil, errors.New("unable to load templates")
 	}
-	return filepath.Glob(filepath.Join(filepath.Dir(filename), "*.tmpl"))
+	return filepath.Glob(filepath.Join(filepath.Dir(filepath.Dir(filename)), "message", "*.tmpl"))
 }

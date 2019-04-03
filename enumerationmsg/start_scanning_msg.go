@@ -1,13 +1,13 @@
 package enumerationmsg
 
 // Auto generated file - do not directly edit!
-import "github.com/pidurentry/buttplug-go"
+import "github.com/pidurentry/buttplug-go/message"
 
 func init() {
-    buttplug.MessageRepository["StartScanning"] = func() interface{} { return &StartScanning{} }
+    message.Repository["StartScanning"] = func() interface{} { return &StartScanning{} }
 }
 
-func (msg *StartScanning) Id() buttplug.MessageId {
+func (msg *StartScanning) Id() message.Id {
     return msg.ID
 }
 

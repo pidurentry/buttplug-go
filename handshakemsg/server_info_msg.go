@@ -1,13 +1,13 @@
 package handshakemsg
 
 // Auto generated file - do not directly edit!
-import "github.com/pidurentry/buttplug-go"
+import "github.com/pidurentry/buttplug-go/message"
 
 func init() {
-    buttplug.MessageRepository["ServerInfo"] = func() interface{} { return &ServerInfo{} }
+    message.Repository["ServerInfo"] = func() interface{} { return &ServerInfo{} }
 }
 
-func (msg *ServerInfo) Id() buttplug.MessageId {
+func (msg *ServerInfo) Id() message.Id {
     return msg.ID
 }
 

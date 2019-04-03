@@ -3,20 +3,22 @@ package buttplug
 import (
 	"sync"
 	"time"
+
+	"github.com/pidurentry/buttplug-go/message"
 )
 
-const SYSTEM_MSG MessageId = 0
+const SYSTEM_MSG message.Id = 0
 
 type Handler interface {
 	Call(Message) (Message, error)
 	Register(Message) (<-chan Message, error)
-	Clear(MessageId)
+	Clear(message.Id)
 }
 
 type handler struct {
 	mux      *sync.Mutex
 	buttplug Buttplug
-	channels map[MessageId]chan Message
+	channels map[message.Id]chan Message
 	done     chan interface{}
 }
 
@@ -24,7 +26,7 @@ func NewHandler(buttplug Buttplug) Handler {
 	handler := &handler{
 		mux:      &sync.Mutex{},
 		buttplug: buttplug,
-		channels: map[MessageId]chan Message{
+		channels: map[message.Id]chan Message{
 			SYSTEM_MSG: make(chan Message, 0),
 		},
 		done: make(chan interface{}, 0),
@@ -105,7 +107,7 @@ func (handler *handler) Register(message Message) (<-chan Message, error) {
 	return handler.channels[message.Id()], nil
 }
 
-func (handler *handler) Clear(ID MessageId) {
+func (handler *handler) Clear(ID message.Id) {
 	if ID == SYSTEM_MSG {
 		// You can't close the system channel!
 		return

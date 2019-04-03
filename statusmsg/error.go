@@ -3,10 +3,10 @@ package statusmsg
 import (
 	"fmt"
 
-	"github.com/pidurentry/buttplug-go"
+	"github.com/pidurentry/buttplug-go/message"
 )
 
-//go:generate go run ../message/generator.go -- $GOFILE
+//go:generate go run ../tools/message_generator.go -- $GOFILE
 
 type ErrorCode int
 type ErrorMessage string
@@ -20,9 +20,9 @@ const (
 )
 
 type Error struct {
-	ID           buttplug.MessageId `json:"Id"`
-	ErrorCode    ErrorCode          `json:"ErrorCode"`
-	ErrorMessage ErrorMessage       `json:"ErrorMessage"`
+	ID           message.Id   `json:"Id"`
+	ErrorCode    ErrorCode    `json:"ErrorCode"`
+	ErrorMessage ErrorMessage `json:"ErrorMessage"`
 }
 
 func (error *Error) Error() string {

@@ -1,13 +1,13 @@
 package statusmsg
 
 // Auto generated file - do not directly edit!
-import "github.com/pidurentry/buttplug-go"
+import "github.com/pidurentry/buttplug-go/message"
 
 func init() {
-    buttplug.MessageRepository["Ping"] = func() interface{} { return &Ping{} }
+    message.Repository["Ping"] = func() interface{} { return &Ping{} }
 }
 
-func (msg *Ping) Id() buttplug.MessageId {
+func (msg *Ping) Id() message.Id {
     return msg.ID
 }
 

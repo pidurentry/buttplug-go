@@ -7,6 +7,12 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/pidurentry/buttplug-go/logging"
+	"github.com/pidurentry/buttplug-go/message"
+
+	// Load all message classes
+	_ "github.com/pidurentry/buttplug-go/enumerationmsg"
+	_ "github.com/pidurentry/buttplug-go/handshakemsg"
+	_ "github.com/pidurentry/buttplug-go/statusmsg"
 )
 
 type Buttplug interface {
@@ -93,7 +99,7 @@ func (buttplug *buttplug) lookupMessageType(messageType int) string {
 }
 
 func (buttplug *buttplug) processJSON(message []byte) {
-	logging.GetLogger().Tracef("Processing json message:\n%s", message)
+	logging.GetLogger().Tracef("Processing json:\n%s", message)
 
 	dec := json.NewDecoder(bytes.NewReader(message))
 	for dec.More() {
@@ -109,7 +115,7 @@ func (buttplug *buttplug) processJSON(message []byte) {
 			continue
 		}
 
-		msg, err := NewMessage(msgType)
+		msg, err := buttplug.create(msgType)
 		if err != nil {
 			logging.GetLogger().Errorf("Failed to create %s message object", msgType, err)
 			buttplug.err <- err
@@ -125,6 +131,14 @@ func (buttplug *buttplug) processJSON(message []byte) {
 		logging.GetLogger().Debugf("Recieved %s message: %#v", msgType, msg.(Message))
 		buttplug.msg <- msg.(Message)
 	}
+}
+
+func (buttplug *buttplug) create(msgType string) (interface{}, error) {
+	factory, ok := message.Repository[msgType]
+	if !ok {
+		return nil, &UnknownMessageType{}
+	}
+	return factory(), nil
 }
 
 func (buttplug *buttplug) Send(messages ...Message) error {

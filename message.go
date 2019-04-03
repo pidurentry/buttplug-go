@@ -1,18 +1,8 @@
 package buttplug
 
-type MessageId int
+import "github.com/pidurentry/buttplug-go/message"
 
 type Message interface {
-	Id() MessageId
+	Id() message.Id
 	Serilize() interface{}
-}
-
-var MessageRepository = make(map[string]func() interface{})
-
-func NewMessage(msgType string) (interface{}, error) {
-	factory, ok := MessageRepository[msgType]
-	if !ok {
-		return nil, &UnknownMessageType{}
-	}
-	return factory(), nil
 }

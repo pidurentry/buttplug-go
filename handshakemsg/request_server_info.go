@@ -1,8 +1,8 @@
 package handshakemsg
 
-import "github.com/pidurentry/buttplug-go"
+import "github.com/pidurentry/buttplug-go/message"
 
-//go:generate go run ../message/generator.go -- $GOFILE
+//go:generate go run ../tools/message_generator.go -- $GOFILE
 
 type ClientName string
 type MessageVersion int
@@ -10,7 +10,7 @@ type MessageVersion int
 const MESSAGE_VERSION MessageVersion = 1
 
 type RequestServerInfo struct {
-	ID             buttplug.MessageId `json:"Id"`
-	ClientName     ClientName         `json:"ClientName"`
-	MessageVersion MessageVersion     `json:"MessageVersion"`
+	ID             message.Id     `json:"Id"`
+	ClientName     ClientName     `json:"ClientName"`
+	MessageVersion MessageVersion `json:"MessageVersion"`
 }

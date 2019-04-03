@@ -1,13 +1,13 @@
 package {{.Package}}
 
 // Auto generated file - do not directly edit!
-import "github.com/pidurentry/buttplug-go"
+import "github.com/pidurentry/buttplug-go/message"
 
 func init() {
-{{range .Msgs}}    buttplug.MessageRepository["{{.}}"] = func() interface{} { return &{{.}}{} }{{end}}
+{{range .Msgs}}    message.Repository["{{.}}"] = func() interface{} { return &{{.}}{} }{{end}}
 }
 {{range .Msgs}}
-func (msg *{{.}}) Id() buttplug.MessageId {
+func (msg *{{.}}) Id() message.Id {
     return msg.ID
 }
 

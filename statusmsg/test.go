@@ -1,12 +1,12 @@
 package statusmsg
 
-import "github.com/pidurentry/buttplug-go"
+import "github.com/pidurentry/buttplug-go/message"
 
-//go:generate go run ../message/generator.go -- $GOFILE
+//go:generate go run ../tools/message_generator.go -- $GOFILE
 
 type TestString string
 
 type Test struct {
-	ID         buttplug.MessageId `json:"Id"`
-	TestString TestString         `json:"TestString"`
+	ID         message.Id `json:"Id"`
+	TestString TestString `json:"TestString"`
 }
