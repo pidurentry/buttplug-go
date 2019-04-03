@@ -3,7 +3,10 @@ package buttplug
 import (
 	"errors"
 	"sync"
+	"time"
 )
+
+const SYSTEM_MSG MessageId = 0
 
 type Handler interface {
 	Call(Message) (Message, error)
@@ -22,21 +25,24 @@ func NewHandler(buttplug Buttplug) Handler {
 	handler := &handler{
 		mux:      &sync.Mutex{},
 		buttplug: buttplug,
-		channels: make(map[MessageId]chan Message),
-		done:     make(chan interface{}, 0),
+		channels: map[MessageId]chan Message{
+			SYSTEM_MSG: make(chan Message, 0),
+		},
+		done: make(chan interface{}, 0),
 	}
 	go handler.listen()
 	return handler
 }
 
 func (handler *handler) listen() {
-	defer close(handler.done)
 	for {
 		select {
 		case msg := <-handler.buttplug.Recieve():
 			go handler.process(msg)
 		case err := <-handler.buttplug.Error():
 			go handler.process(err)
+		case <-handler.done:
+			return
 		}
 	}
 }
@@ -58,15 +64,25 @@ func (handler *handler) process(data interface{}) {
 	channel <- msg
 }
 
+func (handler *handler) System() <-chan Message {
+	return handler.channels[SYSTEM_MSG]
+}
+
 func (handler *handler) Call(message Message) (Message, error) {
 	channel, err := handler.Register(message)
 	if err != nil {
 		return nil, err
 	}
 
+	var msg Message
 	defer handler.Clear(message.Id())
 
-	msg := <-channel
+	select {
+	case msg = <-channel:
+	case <-time.After(500 * time.Millisecond):
+		return nil, errors.New("timeout reached")
+	}
+
 	if err, ok := msg.(error); ok {
 		return nil, err
 	}
@@ -91,6 +107,11 @@ func (handler *handler) Register(message Message) (<-chan Message, error) {
 }
 
 func (handler *handler) Clear(ID MessageId) {
+	if ID == SYSTEM_MSG {
+		// You can't close the system channel!
+		return
+	}
+
 	handler.mux.Lock()
 	defer handler.mux.Unlock()
 
@@ -101,4 +122,14 @@ func (handler *handler) Clear(ID MessageId) {
 
 	close(channel)
 	delete(handler.channels, ID)
+}
+
+func (handler *handler) Close() {
+	handler.mux.Lock()
+	defer handler.mux.Unlock()
+
+	close(handler.done)
+	for _, channel := range handler.channels {
+		close(channel)
+	}
 }
