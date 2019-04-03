@@ -10,6 +10,7 @@ import (
 const SYSTEM_MSG message.Id = 0
 
 type Handler interface {
+	System() <-chan Message
 	Call(Message) (Message, error)
 	Register(Message) (<-chan Message, error)
 	Clear(message.Id)
