@@ -11,7 +11,9 @@ import (
 
 	// Load all message classes
 	_ "github.com/pidurentry/buttplug-go/enumerationmsg"
+	_ "github.com/pidurentry/buttplug-go/genericdevicemsg"
 	_ "github.com/pidurentry/buttplug-go/handshakemsg"
+	_ "github.com/pidurentry/buttplug-go/specificdevicemsg"
 	_ "github.com/pidurentry/buttplug-go/statusmsg"
 )
 
