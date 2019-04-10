@@ -36,11 +36,20 @@ func (managedDevice *managedDevice) Stop() error {
 
 func (managedDevice *managedDevice) send(msg Message) error {
 	response, err := managedDevice.handler.Call(msg)
+
 	if err != nil {
+		switch err := err.(type) {
+		case *statusmsg.Error:
+			if err.ErrorCode == statusmsg.ERROR_DEVICE {
+				return &DeviceError{string(err.ErrorMessage)}
+			}
+		}
 		return err
 	}
+
 	if _, ok := response.(*statusmsg.Ok); !ok {
 		return &CommandFailure{}
 	}
+
 	return nil
 }
