@@ -1,21 +1,17 @@
 package handshakemsg
 
-import "github.com/pidurentry/buttplug-go/message"
+import (
+	"github.com/pidurentry/buttplug-go/message"
+	"github.com/pidurentry/buttplug-go/server"
+)
 
 //go:generate go run ../tools/message_generator.go -- $GOFILE
-
-type ServerName string
-type MajorVersion int
-type MinorVersion int
-type BuildVersion int
-type MaxPingTime int
-
 type ServerInfo struct {
-	ID             message.Id     `json:"Id"`
-	ServerName     ServerName     `json:"ServerName"`
-	MajorVersion   MajorVersion   `json:"MajorVersion"`
-	MinorVersion   MinorVersion   `json:"MinorVersion"`
-	BuildVersion   BuildVersion   `json:"BuildVersion"`
-	MessageVersion MessageVersion `json:"MessageVersion"`
-	MaxPingTime    MaxPingTime    `json:"MaxPingTime"`
+	ID             message.Id          `json:"Id"`
+	ServerName     server.Name         `json:"ServerName"`
+	MajorVersion   server.MajorVersion `json:"MajorVersion"`
+	MinorVersion   server.MinorVersion `json:"MinorVersion"`
+	BuildVersion   server.BuildVersion `json:"BuildVersion"`
+	MessageVersion MessageVersion      `json:"MessageVersion"`
+	MaxPingTime    server.MaxPingTime  `json:"MaxPingTime"`
 }

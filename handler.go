@@ -4,12 +4,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pidurentry/buttplug-go/handshakemsg"
 	"github.com/pidurentry/buttplug-go/message"
 )
 
 const SYSTEM_MSG message.Id = 0
 
 type Handler interface {
+	Handshake(Client) (Server, error)
 	System() <-chan Message
 	Call(Message) (Message, error)
 	Register(Message) (<-chan Message, error)
@@ -64,6 +66,25 @@ func (handler *handler) process(data interface{}) {
 	}
 
 	channel <- msg
+}
+
+func (handler *handler) Handshake(client Client) (Server, error) {
+	msg, err := handler.Call(&handshakemsg.RequestServerInfo{message.NewId(), handshakemsg.ClientName(client), handshakemsg.MESSAGE_VERSION})
+	if err != nil {
+		return nil, err
+	}
+
+	if info, ok := msg.(*handshakemsg.ServerInfo); ok {
+		return newButtplugServer(
+			info.ServerName,
+			info.MajorVersion,
+			info.MinorVersion,
+			info.BuildVersion,
+			info.MaxPingTime,
+		), nil
+	}
+
+	return nil, &CommandFailure{}
 }
 
 func (handler *handler) System() <-chan Message {
