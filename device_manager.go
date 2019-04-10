@@ -19,6 +19,10 @@ type DeviceManager interface {
 	Vibrators() []Vibrate
 	Linears() []Linear
 	Rotators() []Rotate
+	Kiiroos() []Kiiroo
+	FleshlightLaunches() []FleshlightLaunch
+	Lovenses() []Lovense
+	VorzeA10Cyclones() []VorzeA10Cyclone
 }
 
 type deviceManager struct {
@@ -156,6 +160,30 @@ func (deviceManager *deviceManager) create(device *enumerationmsg.Device) []Devi
 				attributes.FeatureCount,
 				deviceManager.handler,
 			))
+		case "KiirooCmd":
+			devices = append(devices, newKiiroo(
+				device.DeviceName,
+				device.DeviceIndex,
+				deviceManager.handler,
+			))
+		case "FleshlightLaunchFW12Cmd":
+			devices = append(devices, newFleshlightLaunch(
+				device.DeviceName,
+				device.DeviceIndex,
+				deviceManager.handler,
+			))
+		case "LovenseCmd":
+			devices = append(devices, newLovense(
+				device.DeviceName,
+				device.DeviceIndex,
+				deviceManager.handler,
+			))
+		case "VorzeA10CycloneCmd":
+			devices = append(devices, newVorzeA10Cyclone(
+				device.DeviceName,
+				device.DeviceIndex,
+				deviceManager.handler,
+			))
 		}
 	}
 	return devices
@@ -220,6 +248,46 @@ func (deviceManager *deviceManager) Rotators() []Rotate {
 		}
 	})
 	return rotators
+}
+
+func (deviceManager *deviceManager) Kiiroos() []Kiiroo {
+	kiiroos := make([]Kiiroo, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if kiiroo, ok := device.(Kiiroo); ok {
+			kiiroos = append(kiiroos, kiiroo)
+		}
+	})
+	return kiiroos
+}
+
+func (deviceManager *deviceManager) FleshlightLaunches() []FleshlightLaunch {
+	launches := make([]FleshlightLaunch, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if launche, ok := device.(FleshlightLaunch); ok {
+			launches = append(launches, launche)
+		}
+	})
+	return launches
+}
+
+func (deviceManager *deviceManager) Lovenses() []Lovense {
+	lovenses := make([]Lovense, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if lovense, ok := device.(Lovense); ok {
+			lovenses = append(lovenses, lovense)
+		}
+	})
+	return lovenses
+}
+
+func (deviceManager *deviceManager) VorzeA10Cyclones() []VorzeA10Cyclone {
+	cyclones := make([]VorzeA10Cyclone, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if cyclone, ok := device.(VorzeA10Cyclone); ok {
+			cyclones = append(cyclones, cyclone)
+		}
+	})
+	return cyclones
 }
 
 func (deviceManager *deviceManager) deviceMap(deviceMap func(Device)) {
