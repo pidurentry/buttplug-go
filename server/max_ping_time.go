@@ -1,3 +1,5 @@
 package server
 
-type MaxPingTime int
+import "time"
+
+type MaxPingTime time.Duration

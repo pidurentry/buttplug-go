@@ -13,5 +13,5 @@ type ServerInfo struct {
 	MinorVersion   server.MinorVersion `json:"MinorVersion"`
 	BuildVersion   server.BuildVersion `json:"BuildVersion"`
 	MessageVersion MessageVersion      `json:"MessageVersion"`
-	MaxPingTime    server.MaxPingTime  `json:"MaxPingTime"`
+	MaxPingTime    uint                `json:"MaxPingTime"`
 }
