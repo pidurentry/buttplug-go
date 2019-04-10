@@ -4,6 +4,7 @@ type Timeout struct{}
 type UnexpectedWebsocketMessageType struct{}
 type MessageIdReused struct{}
 type UnknownMessageType struct{}
+type CommandFailure struct{}
 
 func (*Timeout) Error() string {
 	return "timeout reached"
@@ -19,4 +20,8 @@ func (*MessageIdReused) Error() string {
 
 func (*UnknownMessageType) Error() string {
 	return "unknown message type"
+}
+
+func (*CommandFailure) Error() string {
+	return "command did not return ok response"
 }

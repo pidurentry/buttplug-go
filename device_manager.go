@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pidurentry/buttplug-go/enumerationmsg"
+	"github.com/pidurentry/buttplug-go/genericdevicemsg"
 	"github.com/pidurentry/buttplug-go/logging"
 	"github.com/pidurentry/buttplug-go/message"
 	"github.com/pidurentry/buttplug-go/statusmsg"
@@ -12,19 +13,24 @@ import (
 
 type DeviceManager interface {
 	Scan(duration time.Duration) *sync.WaitGroup
-	Devices() []*enumerationmsg.Device
+	StopAll() bool
+	Devices() []Device
+	Raws() []Raw
+	Vibrators() []Vibrate
+	Linears() []Linear
+	Rotators() []Rotate
 }
 
 type deviceManager struct {
-	mux      *sync.Mutex
+	mux      *sync.RWMutex
 	handler  Handler
 	scanning *sync.WaitGroup
-	devices  []*enumerationmsg.Device
+	devices  []Device
 }
 
 func NewDeviceManager(handler Handler) DeviceManager {
 	return &deviceManager{
-		mux:     &sync.Mutex{},
+		mux:     &sync.RWMutex{},
 		handler: handler,
 	}
 }
@@ -110,14 +116,117 @@ func (deviceManager *deviceManager) requestDeviceList() bool {
 	}
 
 	deviceManager.mux.Lock()
-	deviceManager.devices = deviceList.Devices
+	deviceManager.devices = make([]Device, 0)
+	for _, device := range deviceList.Devices {
+		deviceManager.devices = append(deviceManager.devices, deviceManager.create(device)...)
+	}
 	deviceManager.mux.Unlock()
 
 	return true
 }
 
-func (deviceManager *deviceManager) Devices() []*enumerationmsg.Device {
-	deviceManager.mux.Lock()
-	defer deviceManager.mux.Unlock()
+func (deviceManager *deviceManager) create(device *enumerationmsg.Device) []Device {
+	devices := make([]Device, 0)
+	for msg, attributes := range device.DeviceMessages {
+		switch msg {
+		case "RawCmd":
+			devices = append(devices, newRaw(
+				device.DeviceName,
+				device.DeviceIndex,
+				deviceManager.handler,
+			))
+		case "VibrateCmd":
+			devices = append(devices, newVibrate(
+				device.DeviceName,
+				device.DeviceIndex,
+				attributes.FeatureCount,
+				deviceManager.handler,
+			))
+		case "LinearCmd":
+			devices = append(devices, newLinear(
+				device.DeviceName,
+				device.DeviceIndex,
+				attributes.FeatureCount,
+				deviceManager.handler,
+			))
+		case "RotateCmd":
+			devices = append(devices, newRotate(
+				device.DeviceName,
+				device.DeviceIndex,
+				attributes.FeatureCount,
+				deviceManager.handler,
+			))
+		}
+	}
+	return devices
+}
+
+func (deviceManager *deviceManager) StopAll() bool {
+	msg, err := deviceManager.handler.Call(&genericdevicemsg.StopAllDevices{message.NewId()})
+	if err != nil {
+		logging.GetLogger().Errorf("Failed to stop all devices: %v", err)
+		return false
+	}
+
+	if _, ok := msg.(*statusmsg.Ok); !ok {
+		logging.GetLogger().Errorf("Unexpected response to stop all devices request: %#v", msg)
+		return false
+	}
+
+	return true
+}
+
+func (deviceManager *deviceManager) Devices() []Device {
+	deviceManager.mux.RLock()
+	defer deviceManager.mux.RUnlock()
 	return deviceManager.devices
+}
+
+func (deviceManager *deviceManager) Raws() []Raw {
+	raws := make([]Raw, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if raw, ok := device.(Raw); ok {
+			raws = append(raws, raw)
+		}
+	})
+	return raws
+}
+
+func (deviceManager *deviceManager) Vibrators() []Vibrate {
+	vibrators := make([]Vibrate, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if vibrate, ok := device.(Vibrate); ok {
+			vibrators = append(vibrators, vibrate)
+		}
+	})
+	return vibrators
+}
+
+func (deviceManager *deviceManager) Linears() []Linear {
+	linears := make([]Linear, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if linear, ok := device.(Linear); ok {
+			linears = append(linears, linear)
+		}
+	})
+	return linears
+}
+
+func (deviceManager *deviceManager) Rotators() []Rotate {
+	rotators := make([]Rotate, 0)
+	deviceManager.deviceMap(func(device Device) {
+		if rotate, ok := device.(Rotate); ok {
+			rotators = append(rotators, rotate)
+		}
+	})
+	return rotators
+}
+
+func (deviceManager *deviceManager) deviceMap(deviceMap func(Device)) {
+	deviceManager.mux.RLock()
+	defer deviceManager.mux.RUnlock()
+
+	for _, device := range deviceManager.devices {
+		deviceMap(device)
+	}
 }
